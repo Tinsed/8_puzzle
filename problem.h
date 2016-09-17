@@ -9,13 +9,15 @@
 
 class Problem{
 private:
-	Node *pInitialNode, *iTargetNode;
+	Node *pInitialNode;
+	State targetState;
 
 	QVector<State (*)(Node*, int&)> vecOperations;
 	bool (*goalTest) (Node*);
-	int (*pathCostFunc)();
+	int (*pathCost)();
 public:
 	Problem();
+	Problem(QVector<State (*)(Node*, int&)> op, bool (*)(Node*),int (*)());
 	friend Node* Tree_Search(Problem&, QQueue<Node>);	//Tree search (FIFO by QQueue) TODO: global alg
 	friend QQueue<Node>& Expand(Node*, Problem&);
 };

@@ -12,8 +12,8 @@ public:
 		iXPosition=0;
 		//aState={{'x','1','2'},{'3','4','5'},{'6','7','8'}};
 	}
-	State(char* s,int pos):iXPosition(pos){
-		for(int i =0; i<9;*(*(aState+i/3)+i%3)=*(s+i));
+	State(char** s,int pos):iXPosition(pos){
+		for(int i =0; i<9;*(*(aState+i/3)+i%3)=*(*(s+i/3)+i%3));
 	}
 };
 
