@@ -1,44 +1,68 @@
 #include <problem.h>
 
 Problem::Problem(){
-
+	pInitialNode = new Node();
+	targetState = new State();
+	goalTest = nullptr;
+	pathCost =nullptr;
 }
 
-Problem::Problem(QVector<State (*)(Node*, int&)> op, bool (*goalTestFunc)(Node*),int (*pathCostFunc)()){
+Problem::Problem(QVector<State* (*)(Node*, int&)> op, bool (*goalTestFunc)(Node*,State*),int (*pathCostFunc)(),int Depth){
+	iMaxDepth = Depth;
 	pInitialNode = new Node();
 	char s[3][3] = {{'1', '2', '3'}, {'4','x','5'}, {'6', '7', '8'}};
-	targetState = State((char**)s,(int)0x11);
+	targetState = new State(s,1,1);
 
 	vecOperations.append(op);
 	goalTest = goalTestFunc;
 	pathCost = pathCostFunc;
 }
 
-QQueue<Node>& Expand(Node* current, Problem& problem){
-	QQueue<Node>* successors = new QQueue<Node>();
+QQueue<Node*>* Expand(Node* current, Problem& problem, QTextEdit* TextEdit){
+	QQueue<Node*>* successors = new QQueue<Node*>();
+	if(current->getDepth()>problem.getMaxDepth()) return successors;
+	QString str = "S"+QString::number(current->getDepth()+1)+": ";
 	for(auto Action:problem.vecOperations){
 		int act=0;
 		int stepCost=1; //TODO: create foo stepCost(stateOld,stateNew,action)
-		State newState = Action(current,act);
-		Node* s = new Node(newState,
-						   current,
-						   act,
-						   current->getCost()+stepCost,
-						   current->getDepth()+1);
-		successors->insert(successors->end(),*s);
+		State* newState = Action(current,act);
+		if(newState != nullptr){
+			Node* s = new Node(newState,
+							   current,
+							   act,
+							   current->getCost()+stepCost,
+							   current->getDepth()+1);
+			successors->insert(successors->end(),s);
+			str.append(" " + s->getState()->toString());
+		}
 	}
-	return *successors;
+	TextEdit->append(str);
+	return successors;
 }
 
-Node* Tree_Search(Problem& problem, QQueue<Node> fringe){
-	fringe.insert(fringe.begin(),*problem.pInitialNode);
+extern void refreshEvents();
+
+Node* Tree_Search(Problem& problem, QQueue<Node*>& fringe, QTextEdit* TextEdit){
+	fringe.insert(fringe.begin(),problem.pInitialNode);
 	while(1){
 		if(fringe.empty())
 			return nullptr;
-		Node* current = &fringe.first();
+		Node* current = fringe.first();
+
+		TextEdit->append("C"+QString::number(current->getDepth())+": "+current->getState()->toString());
 		fringe.removeFirst();
-		if(problem.goalTest(current))
+		if(problem.goalTest(current, problem.targetState))
 			return current;	//TODO: return solution - queue of nodes contains path
-		fringe.append(Expand(current, problem));
+		QQueue<Node*>* successors = Expand(current, problem, TextEdit);
+		for(Node* s:*successors){
+			for(auto f:fringe){
+				if(problem.goalTest(s,f->getState()))
+					delete s;
+					successors->removeOne(s);
+			}
+		}
+		fringe.append(*successors);
+		delete successors;
+		refreshEvents();
 	}
 }

@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     node.cpp \
-    problem.cpp
+    problem.cpp \
+    actionsPr.cpp \
 
 HEADERS  += mainwindow.h \
     node.h \
     problem.h \
-    state.h
+    state.h \
+    actionsPr.h \
 
 FORMS    += mainwindow.ui
