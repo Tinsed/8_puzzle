@@ -15,3 +15,8 @@ Node::Node(State* s, Node* parrent, int act, int cost, int depth){
 	iPathCost = cost;
 	iDepth = depth;
 }
+Node::~Node(){
+	delete state;
+	pParentNode = nullptr;
+}
+

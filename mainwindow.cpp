@@ -4,6 +4,7 @@
 #include "actionsPr.h"
 #include "problem.h"
 
+
 extern void refreshEvents(){
 	QApplication::processEvents();
 }
@@ -11,6 +12,7 @@ extern void refreshEvents(){
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindow)
 	{
 		problem = nullptr;
+		solution = nullptr;
 		ui->setupUi(this);
 	}
 
@@ -21,21 +23,62 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionNew_triggered()
 {
-	QVector<State* (*)(Node*, int&)> op;
-	op.append(up);
-	op.append(right);
-	op.append(down);
-	op.append(left);
+
+	if(problem){
+		delete problem;
+	}
+	QVector<State* (*)(Node*, int&)>* op = new QVector<State* (*)(Node*, int&)>();
 	problem = new Problem(op,goalTest,nullptr,0);
+
+	if(ui->lineEdit->text().length()==9){
+		problem->getInitSate()->fromString(ui->lineEdit->text());
+	}
+	if(ui->lineEdit->text().length()==9){
+		problem->getTargetSate()->fromString(ui->lineEdit_2->text());
+	}
+
+	op->append(up);
+	op->append(right);
+	op->append(down);
+	op->append(left);
 }
 
 void MainWindow::on_pushButton_clicked()
 {
-	if(problem){
-		QQueue<Node*> fringe;
-		Node* result = Tree_Search(*problem, fringe, ui->textEdit);
-		ui->textEdit->append((result)?("\nSuccess! "+result->getState()->toString()):"NUF!");
+	if(problem == nullptr){
+		ui->textEdit->append("Open problem!\n");
+		return;
 	}
+
+	QQueue<Node*>* fringe = new QQueue<Node*>();
+	problem->setMaxDepth(ui->horizontalSlider->value());
+
+	ui->textEdit->append("Initial: "+problem->getInitSate()->toString());
+	ui->textEdit->append("Target: "+problem->getTargetSate()->toString());
+	ui->textEdit->append("Depth: "+QString::number(problem->getMaxDepth())+"\n");
+
+	Node* result = Tree_Search(problem, fringe, ui->textEdit);
+
+	if(result == 0){
+		ui->textEdit->append("NUF!\n");
+	}else{
+		ui->textEdit->append("\nSuccess! "+result->getState()->toString());
+		if(solution)
+			delete solution;
+		solution = new QList<Node*>();
+		for(Node* i = result;i;i=i->getParentNode())
+			solution->insert(solution->begin(),i);
+		ui->textEdit->append("Path:");
+		for(auto i:*solution)
+			ui->textEdit->append(QString::number(i->getDepth())+"	"+getActStr(i->getAction())+"	"+i->getState()->toString());
+		ui->textEdit->append("");
+	}
+	for(auto s:*fringe){
+		if(s!= nullptr)
+			delete s;
+	}
+	delete fringe;
+	delete result;
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -43,13 +86,15 @@ void MainWindow::on_pushButton_2_clicked()
 	State* result = new State();
 	result->fromString("1234x5678");
 	ui->textEdit->append(result->toString());
+	delete result;
+	result = new State(0x12345678,4);
+	ui->textEdit->append(result->toString());
+	delete result;
 }
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position)
 {
 	ui->label_10->setText("Depth: " + QString::number(position));
-	if(problem)
-		problem->setMaxDepth(position);
 }
 
 void MainWindow::on_pushButton_4_clicked()

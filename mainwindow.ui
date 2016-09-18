@@ -299,6 +299,9 @@
       <height>20</height>
      </rect>
     </property>
+    <property name="text">
+     <string>12x345678</string>
+    </property>
    </widget>
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
@@ -336,7 +339,7 @@
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>12345x678</string>
     </property>
    </widget>
   </widget>

@@ -1,14 +1,24 @@
 #include "actionsPr.h"
 
-enum {UP,RIGHT,DOWN,LEFT,NUF};
 
-void swap(char& a, char& b){
-	auto c = a;
-	a=b;
-	b=c;
+QString& getActStr(int a){
+	QString* str = new QString();
+	switch(a){
+	case UP:
+		str->append("^"); break;
+	case RIGHT:
+		str->append(">");break;
+	case DOWN:
+		str->append(".");break;
+	case LEFT:
+		str->append("<");break;
+	default:
+		str->append("X");
+	}
+	return *str;
 }
 
-extern State* up(Node* current, int& type){
+State* up(Node* current, int& type){
 	if(current->getState()->getPosI() == 2 || current->getAction() == DOWN)
 		return nullptr;
 
@@ -41,10 +51,7 @@ State* down(Node* current, int& type){
 	int xPos = current->getState()->iXPos;
 
 	unsigned int mask1=0xFF<<(4*(xPos-2)), mask2=0xF<<(4*(xPos-3)), mask3=~(0xFFF<<4*(xPos-3)), temp=current->getState()->iState;
-	mask1 = (temp&mask1)>>4;
-	mask2 = (temp&mask2)<<8;
-	mask3 &= temp;
-	temp = mask1|mask2|mask3;
+	temp = ((temp&mask1)>>4)|((temp&mask2)<<8)|(mask3&temp);
 
 	State* newState = new State(temp,xPos-3);
 
@@ -62,11 +69,10 @@ State* left(Node* current, int& type){
 	return newState;
 }
 
-bool goalTest(Node* current, State* eqState){
-	State* currentState = current->getState();
-	if(currentState == nullptr) return false;
-	if(currentState->iState != eqState->iState
-			||currentState->iXPos != eqState->iXPos)
+bool goalTest(State* current, State* eqState){
+	if(current == nullptr)
+		return false;
+	if(current->iState != eqState->iState || current->iXPos != eqState->iXPos)
 		return false;
 	else return true;
 }

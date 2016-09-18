@@ -7,23 +7,31 @@ Problem::Problem(){
 	pathCost =nullptr;
 }
 
-Problem::Problem(QVector<State* (*)(Node*, int&)> op, bool (*goalTestFunc)(Node*,State*),int (*pathCostFunc)(),int Depth){
+Problem::Problem(QVector<State* (*)(Node*, int&)>* op, bool (*goalTestFunc)(State*,State*),int (*pathCostFunc)(),int Depth){
 	iMaxDepth = Depth;
 	pInitialNode = new Node();
 	targetState = new State(0x12345678,4);  //123|4x5|678
 
-	vecOperations.append(op);
+	vecOperations=op;
 	goalTest = goalTestFunc;
 	pathCost = pathCostFunc;
 }
 
-QQueue<Node*>* Expand(Node* current, Problem& problem, QTextEdit* TextEdit){
-	QQueue<Node*>* successors = new QQueue<Node*>();
-	if(current->getDepth()>problem.getMaxDepth()) return successors;
+Problem::~Problem(){
+	delete pInitialNode;
+	delete targetState;
+}
+
+QList<Node*>* Expand(Node* current, Problem* problem, QTextEdit* TextEdit){
+	QList<Node*>* successors = new QList<Node*>();
+	if(current->getDepth()>=problem->getMaxDepth())
+		return successors;
+
 	QString str = "S"+QString::number(current->getDepth()+1)+": ";
-	for(auto Action:problem.vecOperations){
+
+	for(auto Action:*problem->vecOperations){
 		int act=0;
-		int stepCost=1; //TODO: create foo stepCost(stateOld,stateNew,action)
+		int stepCost = 1; //TODO: create foo stepCost(stateOld,stateNew,action)
 		State* newState = Action(current,act);
 		if(newState != nullptr){
 			Node* s = new Node(newState,
@@ -41,27 +49,31 @@ QQueue<Node*>* Expand(Node* current, Problem& problem, QTextEdit* TextEdit){
 
 extern void refreshEvents();
 
-Node* Tree_Search(Problem& problem, QQueue<Node*>& fringe, QTextEdit* TextEdit){
-	fringe.insert(fringe.begin(),problem.pInitialNode);
+Node* Tree_Search(Problem* problem, QQueue<Node*>* fringe, QTextEdit* TextEdit){
+	fringe->insert(fringe->begin(),problem->pInitialNode); //включаем начальный узел в очередь
 	while(1){
-		if(fringe.empty())
+		if(fringe->empty())	//если очередь пуста выходим
 			return nullptr;
-		Node* current = fringe.first();
+		Node* current = fringe->first();fringe->pop_front();  //вынимаем первый элемент очереди
 
 		TextEdit->append("C"+QString::number(current->getDepth())+": "+current->getState()->toString());
-		fringe.removeFirst();
-		if(problem.goalTest(current, problem.targetState))
+
+		if(problem->goalTest(current->getState(), problem->targetState))  //проверяем на совпадение с целевым
 			return current;	//TODO: return solution - queue of nodes contains path
-		QQueue<Node*>* successors = Expand(current, problem, TextEdit);
-		for(Node* s:*successors){
-			for(auto f:fringe){
-				if(problem.goalTest(s,f->getState())){
-					delete s;
+
+		QList<Node*>* successors = Expand(current, problem, TextEdit); //раскрываем листья
+		//проверяем на нахождение листьев в очереди
+		for(auto f:*fringe){
+			for(Node* s:*successors){
+				if(problem->goalTest(s->getState(),f->getState())){
 					successors->removeOne(s);
+					delete s;
 				}
 			}
 		}
-		fringe.append(*successors);
+
+		if(!(successors->empty()))
+			fringe->append(*successors);
 		delete successors;
 		refreshEvents();
 	}

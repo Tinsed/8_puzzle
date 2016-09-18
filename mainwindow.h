@@ -13,7 +13,8 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 public:
-	Problem* problem;
+	Problem *problem;
+	QList<Node*> *solution;
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 

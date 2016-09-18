@@ -3,13 +3,15 @@
 
 #include <node.h>
 
-//enum{ UP, RIGHT, DOWN, LEFT, NUF}; //Actions
+enum{ UP, RIGHT, DOWN, LEFT, NUF}; //Actions
+
+QString& getActStr(int);
 
 State* up(Node*, int&);
 State* right(Node*, int&);
 State* down(Node*, int&);
 State* left(Node*, int&);
 
-bool goalTest(Node*,State*);
+bool goalTest(State*,State*);
 
 #endif // ACTIONS_H

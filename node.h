@@ -13,10 +13,15 @@ class Node{
 public:
 	Node();
 	Node(State*, Node*, int, int, int);
-	~Node(){delete state;}
+	~Node();
 
 	int getAction() {return iAction;}
 	State* getState(){return state;}
+	State* setState(unsigned int s, int p){
+		state->iState=s;
+		state->iXPos=p;
+	}
+	Node* getParentNode(){return pParentNode;}
 	int getCost() {return iPathCost;}
 	int getDepth() {return iDepth;}
 };
