@@ -40,8 +40,9 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-	Node* result = new Node();
-	ui->textEdit->append(result->getState()->toString());
+	State* result = new State();
+	result->fromString("1234x5678");
+	ui->textEdit->append(result->toString());
 }
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position)

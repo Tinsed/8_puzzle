@@ -1,8 +1,7 @@
 #include <node.h>
 
 Node::Node(){
-	char s[3][3] = {{'x', '2', '3'}, {'1','7','5'}, {'4', '6', '8'}};
-	state = new State(s,0,0);
+	state = new State(0x23175468,8);
 	pParentNode = nullptr;
 	iAction = -1;
 	iPathCost = 0;

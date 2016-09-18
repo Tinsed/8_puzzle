@@ -6,39 +6,33 @@
 class State
 {
 public:
-	char aState[3][3];  //State of the "world" like 742|358|6x1
-	int iXPosI, iXPosJ;
+	unsigned int iState; 	//State of the "world" like 87654321
+	int iXPos;	//pos x between the number
 
 	State(){
-		iXPosI = iXPosJ = 0;
-		for(int i =0; i<9;i++)
-			aState[i/3][i%3]=0;
+		iXPos = 0;
+		iState = 0x12345678;
 	}
 
-	State(char s[][3],int posI,int posJ){
-		iXPosI = posI;
-		iXPosJ = posJ;
-		for(int i = 0; i<9; i++)
-			aState[i/3][i%3] = s[i/3][i%3];
+	State(unsigned int state,int pos){
+		iXPos = pos;
+		iState = state;
 	}
 
 	QString toString(){
-		QString str;
-		str.append(QString::fromLatin1(aState[0],3)+"|");
-		str.append(QString::fromLatin1(aState[1],3)+"|");
-		str.append(QString::fromLatin1(aState[2],3));
-
+		QString str(QString("%1").arg(iState,0,16).toUpper());
+		str.insert(8-iXPos,"x");
+		str.insert(3,"|");
+		str.insert(7,"|");
 		return str;
 	}
+	int getPosI() {return iXPos/3;}
+	int getPosJ() {return iXPos%3;}
+
 	void fromString(QString str){
-		for(int i = 0; i<9; i++){
-			char c =str[i].toLatin1();
-			aState[i/3][i%3] = c;
-			if(c=='x'){
-				iXPosI=i/3;
-				iXPosJ=i%3;
-			}
-		}
+		iXPos = str.indexOf('x');
+		str.remove("x");
+		iState = str.toInt(nullptr,16);
 	}
 };
 
