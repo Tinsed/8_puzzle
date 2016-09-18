@@ -25,6 +25,8 @@ public:
 	int getMaxDepth(){return iMaxDepth;}
 	void setMaxDepth(int d){iMaxDepth=d;}
 
+	State* getInitSate(){return pInitialNode->getState();}
+	State* getTargetSate(){return targetState;}
 
 	friend Node* Tree_Search(Problem&, QQueue<Node*>&, QTextEdit* TextEdit);	//Tree search (FIFO by QQueue) TODO: global alg
 	friend QQueue<Node*>* Expand(Node*, Problem&, QTextEdit* TextEdit);

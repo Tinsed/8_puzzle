@@ -50,3 +50,17 @@ void MainWindow::on_horizontalSlider_sliderMoved(int position)
 	if(problem)
 		problem->setMaxDepth(position);
 }
+
+void MainWindow::on_pushButton_4_clicked()
+{
+	if(problem && ui->lineEdit->text().length()==9){
+		problem->getInitSate()->fromString(ui->lineEdit->text());
+	}
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+	if(problem && ui->lineEdit->text().length()==9){
+		problem->getTargetSate()->fromString(ui->lineEdit_2->text());
+	}
+}

@@ -30,6 +30,16 @@ public:
 
 		return str;
 	}
+	void fromString(QString str){
+		for(int i = 0; i<9; i++){
+			char c =str[i].toLatin1();
+			aState[i/3][i%3] = c;
+			if(c=='x'){
+				iXPosI=i/3;
+				iXPosJ=i%3;
+			}
+		}
+	}
 };
 
 #endif // STATE_H
