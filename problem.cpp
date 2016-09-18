@@ -10,8 +10,7 @@ Problem::Problem(){
 Problem::Problem(QVector<State* (*)(Node*, int&)> op, bool (*goalTestFunc)(Node*,State*),int (*pathCostFunc)(),int Depth){
 	iMaxDepth = Depth;
 	pInitialNode = new Node();
-	char s[3][3] = {{'1', '2', '3'}, {'4','x','5'}, {'6', '7', '8'}};
-	targetState = new State(s,1,1);
+	targetState = new State(0x12345678,4);  //123|4x5|678
 
 	vecOperations.append(op);
 	goalTest = goalTestFunc;
