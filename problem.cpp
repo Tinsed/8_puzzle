@@ -55,9 +55,10 @@ Node* Tree_Search(Problem& problem, QQueue<Node*>& fringe, QTextEdit* TextEdit){
 		QQueue<Node*>* successors = Expand(current, problem, TextEdit);
 		for(Node* s:*successors){
 			for(auto f:fringe){
-				if(problem.goalTest(s,f->getState()))
+				if(problem.goalTest(s,f->getState())){
 					delete s;
 					successors->removeOne(s);
+				}
 			}
 		}
 		fringe.append(*successors);

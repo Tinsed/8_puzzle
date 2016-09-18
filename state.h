@@ -29,6 +29,11 @@ public:
 	int getPosI() {return iXPos/3;}
 	int getPosJ() {return iXPos%3;}
 
+	void fromString(QString str){
+		iXPos = str.indexOf('x');
+		str.remove("x");
+		iState = str.toInt(nullptr,16);
+	}
 };
 
 #endif // STATE_H
