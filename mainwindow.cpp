@@ -3,7 +3,9 @@
 
 #include "actionsPr.h"
 #include "problem.h"
+#include <QTime>
 
+extern bool writeLog = false;
 
 extern void refreshEvents(){
 	QApplication::processEvents();
@@ -51,14 +53,17 @@ void MainWindow::on_pushButton_clicked()
 	}
 
 	QQueue<Node*>* fringe = new QQueue<Node*>();
+	QHash<QString,Node*>* visitedNodes = new QHash<QString,Node*>();
+
 	problem->setMaxDepth(ui->horizontalSlider->value());
 
 	ui->textEdit->append("Initial: "+problem->getInitSate()->toString());
 	ui->textEdit->append("Target: "+problem->getTargetSate()->toString());
 	ui->textEdit->append("Depth: "+QString::number(problem->getMaxDepth())+"\n");
 
-	Node* result = Tree_Search(problem, fringe, ui->textEdit);
-
+	QTime start = QTime::currentTime();
+	Node* result = Tree_Search(problem, visitedNodes,fringe, ui->textEdit);
+	ui->textEdit->append("Time elapsed: "+QString::number(start.elapsed())+"ms");
 	if(result == 0){
 		ui->textEdit->append("NUF!\n");
 	}else{
@@ -73,21 +78,26 @@ void MainWindow::on_pushButton_clicked()
 			ui->textEdit->append(QString::number(i->getDepth())+"	"+getActStr(i->getAction())+"	"+i->getState()->toString());
 		ui->textEdit->append("");
 	}
-	for(auto s:*fringe){
+	for(auto s:*visitedNodes){
 		if(s!= nullptr)
 			delete s;
 	}
+	delete visitedNodes;
+	/*for(auto s:*fringe){
+		if(s!= nullptr)
+			try{delete s;}
+			catch(...){}
+	}*/
 	delete fringe;
-	delete result;
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
 	State* result = new State();
-	result->fromString("1234x5678");
+	result->fromString("123x45678");
 	ui->textEdit->append(result->toString());
 	delete result;
-	result = new State(0x12345678,4);
+	result = new State(0x12345678,3);
 	ui->textEdit->append(result->toString());
 	delete result;
 }
@@ -109,4 +119,45 @@ void MainWindow::on_pushButton_5_clicked()
 	if(problem && ui->lineEdit->text().length()==9){
 		problem->getTargetSate()->fromString(ui->lineEdit_2->text());
 	}
+}
+
+void MainWindow::on_actionDFS_triggered(bool checked)
+{
+	if(checked){
+		ui->action->setChecked(false);
+		ui->action_3->setChecked(false);
+		ui->action_4->setChecked(false);
+	}
+}
+
+void MainWindow::on_action_triggered(bool checked)
+{
+	if(checked){
+		ui->actionDFS->setChecked(false);
+		ui->action_3->setChecked(false);
+		ui->action_4->setChecked(false);
+	}
+}
+
+void MainWindow::on_action_3_triggered(bool checked)
+{
+	if(checked){
+		ui->actionDFS->setChecked(false);
+		ui->action->setChecked(false);
+		ui->action_4->setChecked(false);
+	}
+}
+
+void MainWindow::on_action_4_triggered(bool checked)
+{
+	if(checked){
+		ui->actionDFS->setChecked(false);
+		ui->action->setChecked(false);
+		ui->action_3->setChecked(false);
+	}
+}
+
+void MainWindow::on_checkBox_stateChanged(int arg1)
+{
+	writeLog = arg1==2;
 }

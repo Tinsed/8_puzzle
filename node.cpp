@@ -16,7 +16,8 @@ Node::Node(State* s, Node* parrent, int act, int cost, int depth){
 	iDepth = depth;
 }
 Node::~Node(){
-	delete state;
+	if(state!=nullptr)
+		delete state;
 	pParentNode = nullptr;
 }
 

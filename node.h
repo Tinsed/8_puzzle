@@ -12,7 +12,7 @@ class Node{
 	int iDepth;		//Depth, number of stages of path
 public:
 	Node();
-	Node(State*, Node*, int, int, int);
+	Node(State* state, Node* parert, int act, int cost, int depth);
 	~Node();
 
 	int getAction() {return iAction;}

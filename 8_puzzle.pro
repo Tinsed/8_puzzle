@@ -25,3 +25,5 @@ HEADERS  += mainwindow.h \
     actionsPr.h \
 
 FORMS    += mainwindow.ui
+
+DISTFILES +=

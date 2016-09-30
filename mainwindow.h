@@ -31,6 +31,16 @@ private slots:
 
 	void on_pushButton_5_clicked();
 
+	void on_actionDFS_triggered(bool checked);
+
+	void on_action_triggered(bool checked);
+
+	void on_action_3_triggered(bool checked);
+
+	void on_action_4_triggered(bool checked);
+
+	void on_checkBox_stateChanged(int arg1);
+
 private:
 	Ui::MainWindow *ui;
 };

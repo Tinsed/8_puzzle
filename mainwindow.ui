@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>862</width>
-    <height>508</height>
+    <width>859</width>
+    <height>505</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -348,7 +348,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>862</width>
+     <width>859</width>
      <height>21</height>
     </rect>
    </property>
@@ -363,11 +363,25 @@
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>About</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuMethod">
+    <property name="title">
+     <string>Method</string>
+    </property>
+    <addaction name="actionDFS"/>
+    <addaction name="action"/>
+    <addaction name="separator"/>
+    <addaction name="action_3"/>
+    <addaction name="action_4"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMethod"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -395,6 +409,9 @@
    </property>
   </action>
   <action name="actionExport_to">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Export to</string>
    </property>
@@ -410,8 +427,55 @@
    </property>
   </action>
   <action name="actionClose">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Close</string>
+   </property>
+  </action>
+  <action name="actionDFS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>DFS</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>С ограничением глубины</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Число фишек в неверной позиции</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Манхэттенские расстояния</string>
    </property>
   </action>
  </widget>

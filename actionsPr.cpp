@@ -19,13 +19,16 @@ QString& getActStr(int a){
 }
 
 State* up(Node* current, int& type){
-	if(current->getState()->getPosI() == 2 || current->getAction() == DOWN)
+	if(current->getState()->getPosI() == 2)
 		return nullptr;
 
 	int xPos = current->getState()->iXPos;
 
-	unsigned int mask1=0xFF<<(4*(xPos+1)), mask2=0xF<<(4*xPos), mask3=~(mask1|mask2), temp=current->getState()->iState;
-	temp = (temp&mask3)|((temp<<4)&mask1)|((temp>>8)&mask2);
+	unsigned int mask1=0xFF<<(4*(xPos)),
+			mask2=0xF<<(4*(xPos+2)),
+			mask3=~(mask1|mask2),
+			temp=current->getState()->iState;
+	temp = (temp&mask3)|((temp&mask1)<<4)|((temp&mask2)>>8);
 
 	State* newState = new State(temp,xPos+3);
 
@@ -35,7 +38,7 @@ State* up(Node* current, int& type){
 
 
 State* right(Node* current, int& type){
-	if(current->getState()->getPosJ() == 0 || current->getAction() == LEFT)
+	if(current->getState()->getPosJ() == 0)
 		return nullptr;
 
 	State* newState = new State(current->getState()->iState,current->getState()->iXPos-1);
@@ -45,12 +48,15 @@ State* right(Node* current, int& type){
 }
 
 State* down(Node* current, int& type){
-	if(current->getState()->getPosI() == 0 || current->getAction() == UP)
+	if(current->getState()->getPosI() == 0)
 		return nullptr;
 
 	int xPos = current->getState()->iXPos;
 
-	unsigned int mask1=0xFF<<(4*(xPos-2)), mask2=0xF<<(4*(xPos-3)), mask3=~(0xFFF<<4*(xPos-3)), temp=current->getState()->iState;
+	unsigned int mask1=0xFF<<(4*(xPos-2)),
+			mask2=0xF<<(4*(xPos-3)),
+			mask3=~(0xFFF<<4*(xPos-3)),
+			temp=current->getState()->iState;
 	temp = ((temp&mask1)>>4)|((temp&mask2)<<8)|(mask3&temp);
 
 	State* newState = new State(temp,xPos-3);
@@ -60,7 +66,7 @@ State* down(Node* current, int& type){
 }
 
 State* left(Node* current, int& type){
-	if(current->getState()->getPosJ() == 2 || current->getAction() == RIGHT)
+	if(current->getState()->getPosJ() == 2)
 		return nullptr;
 
 	State* newState = new State(current->getState()->iState,current->getState()->iXPos+1);
@@ -70,9 +76,5 @@ State* left(Node* current, int& type){
 }
 
 bool goalTest(State* current, State* eqState){
-	if(current == nullptr)
-		return false;
-	if(current->iState != eqState->iState || current->iXPos != eqState->iXPos)
-		return false;
-	else return true;
+	return current->iState == eqState->iState && current->iXPos == eqState->iXPos;
 }
