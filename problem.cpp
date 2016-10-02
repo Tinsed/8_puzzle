@@ -1,6 +1,7 @@
 #include <problem.h>
 #include <QFile>
 #include <QTextStream>
+#include <QTime>
 extern bool writeLog;
 
 Problem::Problem(){
@@ -25,7 +26,7 @@ Problem::~Problem(){
 	delete targetState;
 }
 
-QList<Node*>* Expand(Node* current, Problem* problem, QTextEdit* TextEdit){
+QList<Node*>* Expand(Node* current, Problem* problem){
 	QList<Node*>* successors = new QList<Node*>();
 
 	for(auto Action:*problem->vecOperations){
@@ -45,15 +46,14 @@ QList<Node*>* Expand(Node* current, Problem* problem, QTextEdit* TextEdit){
 
 extern void refreshEvents();
 
-Node* Tree_Search(Problem* problem, QHash<QString,Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* TextEdit){
+Node* Tree_Search_BFS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<Node*>* fringe){
 	Node* startNode = new Node(new State(
 								   problem->pInitialNode->getState()->iState,
 								   problem->pInitialNode->getState()->iXPos
 								   ), nullptr,-1,
 							   problem->pInitialNode->getCost(),problem->pInitialNode->getDepth());
 	fringe->insert(fringe->begin(),startNode); //включаем начальный узел в очередь
-	visitedNodes->insert(startNode->getState()->getHash(),startNode);
-
+	visitedNodes->insert(startNode->getState()->getHashI(),startNode);
 
 	QFile file("out.txt");
 	 if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -66,40 +66,129 @@ Node* Tree_Search(Problem* problem, QHash<QString,Node*> *visitedNodes, QQueue<N
 		Node* current = fringe->first();fringe->pop_front();  //вынимаем первый элемент очереди
 			//посетили первую ноду
 
-		if(writeLog)
-			TextEdit->append("C"+QString::number(current->getDepth())+": "+current->getState()->toString());
-		out << "C" << current->getDepth() << ": " + current->getState()->toString()<< "\n";
-		out << "N: " << visitedNodes->size() << " Q: " << fringe->size() << "\n";
+		if(writeLog){
+			out << "C" << current->getDepth() << ": " + current->getState()->toString()<< "\n";
+			out << "N: " << visitedNodes->size() << " Q: " << fringe->size() << "\n";
+		}
 		if(problem->goalTest(current->getState(), problem->targetState))  //проверяем на совпадение с целевым
 			return current;	//TODO: return solution - queue of nodes contains path
 
-		QList<Node*>* successors = Expand(current, problem, TextEdit); //раскрываем листья
+		QList<Node*>* successors = Expand(current, problem); //раскрываем листья
 		//проверяем на нахождение листьев в очереди
 		QString str;
-		//if(writeLog)
+		if(writeLog)
 			str = "S"+QString::number(current->getDepth()+1)+":";
-		for(Node* s:*successors){
-			QString hash = s->getState()->getHash(); //получаем хэш ноды
-			if(visitedNodes->find(hash) == visitedNodes->end()){	//если нет в посещенных
-				visitedNodes->insert(hash,s);			//добавляем в посещенные
-				fringe->append(s);						//добавляем в кромку
-				//if(writeLog)
-					str.append(" " + s->getState()->toString());
+		for(Node* i:*successors){
+			int hash = i->getState()->getHashI(); //получаем хэш ноды
+			if(visitedNodes->contains(hash)){	//если в посещенных
+				delete i;
 			}else {
-				delete s;
+				visitedNodes->insert(hash,i);			//добавляем в посещенные
+				fringe->append(i);						//добавляем в кромку
+				if(writeLog)
+					str.append(" " + i->getState()->toString());
+
 			}
 		}
-		if(writeLog)
-			TextEdit->append(str);
-		out << str << "\n";
+		if(writeLog){
+			out << str << "\n";
+		}
 		successors->clear();
 		delete successors;
 		refreshEvents();
 	}
 }
+//enum{BFS,DLS,ERRCOUNT,MTT};
 
-QList<Node>* SolveProblem(Problem* problem,QQueue<Node*> fringe,QTextEdit* logWiget,int type){
+Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQueue<Node*>* fringe, QTextStream& out){
+	if(writeLog){
+		out << "C" << pNode->getDepth() << ": " + pNode->getState()->toString()<< "\n";
+		out << "N: " << visitedNodes->size() << " Q: " << fringe->size() << "\n";
+	}
+	if(problem->goalTest(problem->getTargetSate(),pNode->getState()))
+		return pNode;
+	if(pNode->getDepth()<=problem->getMaxDepth()){
+		QList<Node*>* successors = Expand(pNode,problem);
+		QString str;
+		if(writeLog)
+			str = "S"+QString::number(pNode->getDepth()+1)+":";
+		for(Node* i:*successors){
+			int hash = i->getState()->getHashI();
+			if(writeLog)
+				str.append(" " + i->getState()->toString()); // QString::number(hash,16) + " - " +
+			if(visitedNodes->contains(hash)){	//если в посещенных
+				successors->removeOne(i);
+				delete i; //убираем уже пройденный узел
+			}else{
+				visitedNodes->insert(hash,i);//добавляем в посещенные
+			}
+		}
+		if(writeLog)
+			out << str << "\n";
+		for(Node* i:*successors){
+			Node* rlt = RecDLS(i,problem,visitedNodes,fringe,out);
+			if(rlt)
+				return rlt;
+			else
+				visitedNodes->remove(i->getState()->getHashI());
+		}
+		successors->clear();
+		delete successors;
+	}
+	return nullptr;
+}
 
-	QList<Node>* solution;
+Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<Node*>* fringe){
+	QFile file("out.txt");
+	 if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		 return nullptr;
+	QTextStream out(&file);
+
+	Node* pStartNode = new Node(new State(
+								   problem->getInitSate()->iState,
+								   problem->getInitSate()->iXPos
+								   ), nullptr,-1,0,0);
+	visitedNodes->insert(pStartNode->getState()->getHashI(),pStartNode);
+	return RecDLS(pStartNode,problem,visitedNodes,fringe,out);
+}
+
+QList<Node*>* SolveProblem(Problem* problem,QTextEdit* logWidget,int type){
+
+	QQueue<Node*>* fringe = new QQueue<Node*>();
+	QHash<int,Node*>* visitedNodes = new QHash<int,Node*>();
+
+	logWidget->append("Initial: "+problem->getInitSate()->toString());
+	logWidget->append("Target: "+problem->getTargetSate()->toString());
+
+	QTime start = QTime::currentTime();
+	Node* pResultNode = nullptr;
+	switch(type){
+	case BFS:
+		logWidget->append("Type: BFS \n");
+		pResultNode = Tree_Search_BFS(problem, visitedNodes, fringe);
+		break;
+	case DLS:
+		logWidget->append("Type: DLS");
+		logWidget->append("Depth: "+QString::number(problem->getMaxDepth())+"\n");
+		pResultNode = Tree_Search_DLS(problem, visitedNodes, fringe);
+		break;
+	}
+	logWidget->append("Time elapsed: "+QString::number(start.elapsed())+"ms");
+	//Получаем решение
+	QList<Node*>* solution = nullptr;
+	if(pResultNode){
+		solution = new QList<Node*>();
+		for(Node* i = pResultNode;i;i=i->getParentNode()){
+			Node* pNewNode = new Node(new State(i->getState()->iState,i->getState()->iXPos),i->getParentNode(),i->getAction(),i->getCost(),i->getDepth());
+			solution->insert(solution->begin(),pNewNode);
+		}
+	}
+	//Чистим память
+	for(auto s:*visitedNodes){
+		if(s!= nullptr)
+			delete s;
+	}
+	delete visitedNodes;
+	delete fringe;
 	return solution;
 }

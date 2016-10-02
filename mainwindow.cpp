@@ -3,13 +3,15 @@
 
 #include "actionsPr.h"
 #include "problem.h"
-#include <QTime>
+
 
 extern bool writeLog = false;
 
 extern void refreshEvents(){
 	QApplication::processEvents();
 }
+
+int iTypeAlg = 0;
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindow)
 	{
@@ -52,43 +54,21 @@ void MainWindow::on_pushButton_clicked()
 		return;
 	}
 
-	QQueue<Node*>* fringe = new QQueue<Node*>();
-	QHash<QString,Node*>* visitedNodes = new QHash<QString,Node*>();
-
 	problem->setMaxDepth(ui->horizontalSlider->value());
 
-	ui->textEdit->append("Initial: "+problem->getInitSate()->toString());
-	ui->textEdit->append("Target: "+problem->getTargetSate()->toString());
-	ui->textEdit->append("Depth: "+QString::number(problem->getMaxDepth())+"\n");
-
-	QTime start = QTime::currentTime();
-	Node* result = Tree_Search(problem, visitedNodes,fringe, ui->textEdit);
-	ui->textEdit->append("Time elapsed: "+QString::number(start.elapsed())+"ms");
-	if(result == 0){
+	QList<Node*>* solution = SolveProblem(problem,ui->textEdit,iTypeAlg);
+	if(solution == nullptr){
 		ui->textEdit->append("NUF!\n");
 	}else{
-		ui->textEdit->append("\nSuccess! "+result->getState()->toString());
-		if(solution)
-			delete solution;
-		solution = new QList<Node*>();
-		for(Node* i = result;i;i=i->getParentNode())
-			solution->insert(solution->begin(),i);
+		ui->textEdit->append("\nSuccess! "+solution->last()->getState()->toString());
 		ui->textEdit->append("Path:");
 		for(auto i:*solution)
 			ui->textEdit->append(QString::number(i->getDepth())+"	"+getActStr(i->getAction())+"	"+i->getState()->toString());
 		ui->textEdit->append("");
+		for(auto i:*solution)
+			delete i;
 	}
-	for(auto s:*visitedNodes){
-		if(s!= nullptr)
-			delete s;
-	}
-	delete visitedNodes;
-	/*for(auto s:*fringe){
-		if(s!= nullptr)
-			try{delete s;}
-			catch(...){}
-	}*/
-	delete fringe;
+	delete solution; //TODO: global
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -96,10 +76,13 @@ void MainWindow::on_pushButton_2_clicked()
 	State* result = new State();
 	result->fromString("123x45678");
 	ui->textEdit->append(result->toString());
+	ui->textEdit->append(QString::number(result->getHashI(),16));
 	delete result;
 	result = new State(0x12345678,3);
 	ui->textEdit->append(result->toString());
+	ui->textEdit->append(QString::number(result->getHashI(),16));
 	delete result;
+
 }
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position)
@@ -124,6 +107,7 @@ void MainWindow::on_pushButton_5_clicked()
 void MainWindow::on_actionDFS_triggered(bool checked)
 {
 	if(checked){
+		iTypeAlg = BFS;
 		ui->action->setChecked(false);
 		ui->action_3->setChecked(false);
 		ui->action_4->setChecked(false);
@@ -133,6 +117,7 @@ void MainWindow::on_actionDFS_triggered(bool checked)
 void MainWindow::on_action_triggered(bool checked)
 {
 	if(checked){
+		iTypeAlg = DLS;
 		ui->actionDFS->setChecked(false);
 		ui->action_3->setChecked(false);
 		ui->action_4->setChecked(false);

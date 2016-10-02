@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include <QString>
+#include <QByteArray>
 
 union intAChar{
 	int a;
@@ -32,7 +33,11 @@ public:
 		return str;
 	}
 	QString getHash(){
-		return QString::number(iXPos)+QString::number(iState);
+		return QString::number(iXPos)+QString::number(iState,16);
+	}
+
+	int getHashI(){
+		return iState + iXPos;
 	}
 
 	int getPosI() {return iXPos/3;}

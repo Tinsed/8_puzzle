@@ -442,7 +442,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>DFS</string>
+    <string>BFS</string>
    </property>
   </action>
   <action name="action">
@@ -450,10 +450,10 @@
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>С ограничением глубины</string>
+    <string>DLS</string>
    </property>
   </action>
   <action name="action_3">

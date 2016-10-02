@@ -6,10 +6,11 @@
 #include <QHash>
 #include <QVector>
 #include <QTextEdit>
+#include <QTextStream>
 
 #include <node.h>
 
-enum{DFS,EXDEPTH,ERRCOUNT,MTT};
+enum{BFS,DLS,ERRCOUNT,MTT};
 
 class Problem{
 private:
@@ -40,10 +41,11 @@ public:
 	void setInitSate(){ pInitialNode->getState();}
 	State* getTargetSate(){return targetState;}
 
-	friend QList<Node>* SolveProblem(Problem* problem,QQueue<Node*> fringe,QTextEdit* logWiget,int type);
-	friend Node* Tree_Search(Problem*, QHash<QString,Node*>*, QQueue<Node*>*, QTextEdit* TextEdit);	//Tree search (FIFO by QQueue) TODO: global alg
-	friend QList<Node*>* Expand(Node*, Problem*, QTextEdit* TextEdit);
+	friend QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWiget, int type);
+	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>*, QQueue<Node*>*);	//Tree search (FIFO by QQueue) TODO: global alg
+	friend QList<Node*>* Expand(Node*, Problem*);
+	friend Node* RecDLS(Node*& pStartNode, Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextStream& out);
+	friend Node* Tree_Search_DLS(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe);
+
 };
-
-
 #endif // TREE_H

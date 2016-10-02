@@ -76,5 +76,5 @@ State* left(Node* current, int& type){
 }
 
 bool goalTest(State* current, State* eqState){
-	return current->iState == eqState->iState && current->iXPos == eqState->iXPos;
+	return (current->iState == eqState->iState && current->iXPos == eqState->iXPos);
 }
