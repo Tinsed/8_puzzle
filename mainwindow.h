@@ -15,6 +15,7 @@ class MainWindow : public QMainWindow
 public:
 	Problem *problem;
 	QList<Node*> *solution;
+	QVector<State* (*)(Node*, int&)>* op;
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 

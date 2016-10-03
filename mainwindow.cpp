@@ -5,6 +5,7 @@
 #include "problem.h"
 
 
+
 extern bool writeLog = false;
 extern bool stepMode = false;
 extern bool doStep = false;
@@ -21,6 +22,7 @@ int iTypeAlg = 0;
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindow)
 	{
 		problem = nullptr;
+		op = nullptr;
 		solution = nullptr;
 		ui->setupUi(this);
 	}
@@ -36,7 +38,9 @@ void MainWindow::on_actionNew_triggered()
 	if(problem){
 		delete problem;
 	}
-	QVector<State* (*)(Node*, int&)>* op = new QVector<State* (*)(Node*, int&)>();
+	if(op)
+		delete op;
+	op = new QVector<State* (*)(Node*, int&)>();
 	problem = new Problem(op,goalTest,nullptr,0);
 
 	if(ui->lineEdit->text().length()==9){
