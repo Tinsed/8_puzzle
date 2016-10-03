@@ -42,10 +42,10 @@ public:
 	State* getTargetSate(){return targetState;}
 
 	friend QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWiget, int type);
-	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>*, QQueue<Node*>*);	//Tree search (FIFO by QQueue) TODO: global alg
-	friend QList<Node*>* Expand(Node*, Problem*);
-	friend Node* RecDLS(Node*& pStartNode, Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextStream& out);
-	friend Node* Tree_Search_DLS(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe);
+	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>* visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);	//Tree search (FIFO by QQueue) TODO: global alg
+	friend QList<Node*>* Expand(Node* currentNode, Problem*);
+	friend Node* RecDLS(Node*& pStartNode, Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget, QTextStream& out);
+	friend Node* Tree_Search_DLS(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);
 
 };
 #endif // TREE_H
