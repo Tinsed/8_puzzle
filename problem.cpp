@@ -147,7 +147,7 @@ Node* Tree_Search_BFS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<N
 	}
 }
 
-Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQueue<Node*>* fringe,QHash<int,Node*> *unqNodes, QTextEdit* logWidget, QTextStream& out){
+Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,int>* visitedNodes, QQueue<Node*>* fringe,QHash<int,Node*> *unqNodes, QTextEdit* logWidget, QTextStream& out){
 	if(writeLog){
 		out << "C" << pNode->getDepth() << ": " + pNode->getState()->toString()<< "\n";
 		out << "N: " << visitedNodes->size() << "\n";
@@ -173,12 +173,16 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 				unqNodes->insert(hash,nullptr);
 			}
 			if(visitedNodes->contains(hash)){	//если в посещенных
-				successors->removeOne(i);
-				if(stepMode)
-					strDel.append(" " + i->getState()->toString());
-				delete i; //убираем уже пройденный узел
+				if((*visitedNodes)[hash] <= i->getDepth()){
+					successors->removeOne(i);
+					if(stepMode)
+						strDel.append(" " + i->getState()->toString());
+					delete i; //убираем уже пройденный узел
+				}else{
+					(*visitedNodes)[hash]=i->getDepth();
+				}
 			}else{
-				visitedNodes->insert(hash,i);//добавляем в посещенные
+				visitedNodes->insert(hash,i->getDepth());//добавляем в посещенные
 				if(stepMode)
 					fringe->insert(fringe->begin(),i);
 			}
@@ -221,10 +225,6 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 			Node* rlt = RecDLS(i,problem,visitedNodes,fringe,unqNodes,logWidget,out);
 			if(rlt)
 				return rlt;
-			else{
-				visitedNodes->remove(i->getState()->getHashI());
-				delete i;
-			}
 		}
 		successors->clear();
 		delete successors;
@@ -245,12 +245,13 @@ Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *unqNodes, QQueue<Node*
 								   problem->getInitSate()->iXPos
 								   ), nullptr,-1,0,0);
 	countObj++;
-	QHash<int,Node*> *visitedNodes = new QHash<int,Node*>();
-	visitedNodes->insert(pStartNode->getState()->getHashI(),pStartNode); // Подсовываем его в посещенные
+	QHash<int,int> *dNodes = new QHash<int,int>();
+	dNodes->insert(pStartNode->getState()->getHashI(),pStartNode->getDepth()); // Подсовываем его в посещенные
 	unqNodes->insert(pStartNode->getState()->getHashI(),pStartNode);
 	fringe->insert(fringe->begin(),pStartNode);
-
-	return RecDLS(pStartNode,problem,visitedNodes,fringe,unqNodes,logWidget,out);
+	Node* ret = RecDLS(pStartNode,problem,dNodes,fringe,unqNodes,logWidget,out);
+	delete dNodes;
+	return ret;
 }
 
 QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){

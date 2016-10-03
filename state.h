@@ -32,11 +32,8 @@ public:
 		str.insert(7,"|");
 		return str;
 	}
-	QString getHash(){
-		return QString::number(iXPos)+QString::number(iState,16);
-	}
 
-	int getHashI(){
+	unsigned int getHashI(){
 		return iState + iXPos;
 	}
 
@@ -46,7 +43,10 @@ public:
 	void fromString(QString str){
 		iXPos = 8-str.indexOf('x');
 		str.remove("x");
-		iState = str.toInt(nullptr,16);
+		QString temp = str;
+		temp.remove(4,4);
+		str.remove(temp);
+		iState = (temp.toUInt(nullptr,16)<<16)|str.toUInt(nullptr,16);
 	}
 };
 
