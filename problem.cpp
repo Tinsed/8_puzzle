@@ -106,7 +106,6 @@ Node* Tree_Search_BFS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<N
 				fringe->append(i);						//добавляем в кромку
 				if(writeLog||stepMode)
 					str.append(" " + i->getState()->toString());
-
 			}
 		}
 		if(stepMode){
@@ -148,19 +147,17 @@ Node* Tree_Search_BFS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<N
 	}
 }
 
-Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget, QTextStream& out){
+Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQueue<Node*>* fringe,QHash<int,Node*> *unqNodes, QTextEdit* logWidget, QTextStream& out){
 	if(writeLog){
 		out << "C" << pNode->getDepth() << ": " + pNode->getState()->toString()<< "\n";
-		out << "N: " << visitedNodes->size() << " Q: " << fringe->size() << "\n";
+		out << "N: " << visitedNodes->size() << "\n";
 	}
 	countStep++;
 	refreshEvents();
 	if(doStop){
-		doStop = false;
-		logWidget->append("Stopped");
 		return nullptr;
 	}
-	fringe->removeOne(pNode);
+	if(stepMode) fringe->removeOne(pNode);
 	if(problem->goalTest(problem->getTargetSate(),pNode->getState()))
 		return pNode;
 	if(pNode->getDepth()<=problem->getMaxDepth()){
@@ -172,6 +169,9 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 			int hash = i->getState()->getHashI();
 			if(writeLog||stepMode)
 				str.append(" " + i->getState()->toString()); // QString::number(hash,16) + " - " +
+			if(!unqNodes->contains(hash)){
+				unqNodes->insert(hash,nullptr);
+			}
 			if(visitedNodes->contains(hash)){	//если в посещенных
 				successors->removeOne(i);
 				if(stepMode)
@@ -179,7 +179,8 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 				delete i; //убираем уже пройденный узел
 			}else{
 				visitedNodes->insert(hash,i);//добавляем в посещенные
-				fringe->insert(fringe->begin(),i);
+				if(stepMode)
+					fringe->insert(fringe->begin(),i);
 			}
 		}
 		if(stepMode){
@@ -189,6 +190,7 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 			logWidget->append("Depth: "+QString::number(pNode->getDepth()));
 			logWidget->append("Successors:"+str);
 			logWidget->append("Colisions:"+strDel);
+			logWidget->append("Unique nodes: "+QString::number(unqNodes->size()));
 			logWidget->append("Visited nodes: "+QString::number(visitedNodes->size()));
 			logWidget->append("Fringe size: "+QString::number(fringe->size()));
 			QString strFringe;
@@ -213,9 +215,10 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 			}
 			if(stepMode) logWidget->clear();
 			doStep = false;
+			doStop = false;
 		}
 		for(Node* i:*successors){
-			Node* rlt = RecDLS(i,problem,visitedNodes,fringe,logWidget,out);
+			Node* rlt = RecDLS(i,problem,visitedNodes,fringe,unqNodes,logWidget,out);
 			if(rlt)
 				return rlt;
 			else{
@@ -229,10 +232,10 @@ Node* RecDLS(Node*& pNode, Problem* problem, QHash<int,Node*>* visitedNodes, QQu
 	return nullptr;
 }
 
-Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget){
+Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *unqNodes, QQueue<Node*>* fringe, QTextEdit* logWidget){
 	//Настройка выходного файла
 	QFile file("out.txt");
-	 if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+	if(!writeLog && !file.open(QIODevice::WriteOnly | QIODevice::Text))
 		 return nullptr;
 	QTextStream out(&file);
 
@@ -242,9 +245,12 @@ Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *visitedNodes, QQueue<N
 								   problem->getInitSate()->iXPos
 								   ), nullptr,-1,0,0);
 	countObj++;
+	QHash<int,Node*> *visitedNodes = new QHash<int,Node*>();
 	visitedNodes->insert(pStartNode->getState()->getHashI(),pStartNode); // Подсовываем его в посещенные
+	unqNodes->insert(pStartNode->getState()->getHashI(),pStartNode);
 	fringe->insert(fringe->begin(),pStartNode);
-	return RecDLS(pStartNode,problem,visitedNodes,fringe,logWidget,out);
+
+	return RecDLS(pStartNode,problem,visitedNodes,fringe,unqNodes,logWidget,out);
 }
 
 QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){
@@ -267,10 +273,13 @@ QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){
 		logWidget->append("Type: DLS");
 		logWidget->append("Depth: "+QString::number(problem->getMaxDepth())+"\n");
 		pResultNode = Tree_Search_DLS(problem, visitedNodes, fringe, logWidget);
+		if(doStop){
+			logWidget->append("Stopped");
+			doStop = false;
+		}
 		break;
 	}
 	logWidget->append("Time elapsed: "+QString::number(start.elapsed())+"ms");
-
 	//Получаем решение
 	QList<Node*>* solution = nullptr;
 	if(pResultNode){
@@ -282,6 +291,7 @@ QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){
 			solution->insert(solution->begin(),pNewNode); //Суем родителя в начало списка
 		}
 	}
+	logWidget->append("Unique nodes: "+QString::number(visitedNodes->size()));
 	//Чистим память
 	for(auto s:*visitedNodes){
 		if(s!= nullptr)
