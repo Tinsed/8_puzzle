@@ -14,4 +14,7 @@ State* left(Node*, int&);
 
 bool goalTest(State*,State*);
 
+int heuristicErrCount(State*, State*);
+int heuristicManhattan(State*, State*);
+
 #endif // ACTIONS_H

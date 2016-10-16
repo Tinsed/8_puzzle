@@ -23,7 +23,9 @@ private:
 	QVector<State* (*)(Node*, int&)>* vecOperations;
 	bool (*goalTest) (State*, State*);
 	int (*pathCost)();
+
 public:
+	int (*heuristicFoo) (State*, State*);
 	Problem();
 	Problem(QVector<State* (*)(Node*, int&)>*,
 			bool (*)(State*, State*),
@@ -42,10 +44,14 @@ public:
 	State* getTargetSate(){return targetState;}
 
 	friend QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWiget, int type);
-	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>* visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);	//Tree search (FIFO by QQueue) TODO: global alg
-	friend QList<Node*>* Expand(Node* currentNode, Problem*);
+
+	friend QList<Node*>* Expand(Node* currentNode, Problem*, int (*heurFoo) (State*, State*) = nullptr); //open node for successors
+
+	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>* visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);	//Tree search (FIFO by QQueue)
+
 	friend Node* RecDLS(Node*& pStartNode, Problem* problem, QHash<int, int> *visitedNodes, QQueue<Node*>* fringe,QHash<int,Node*> *unqNodes, QTextEdit* logWidget, QTextStream& out);
 	friend Node* Tree_Search_DLS(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);
 
+	friend Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);
 };
 #endif // TREE_H

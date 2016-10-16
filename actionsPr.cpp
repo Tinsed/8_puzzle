@@ -78,3 +78,28 @@ State* left(Node* current, int& type){
 bool goalTest(State* current, State* eqState){
 	return (current->iState == eqState->iState && current->iXPos == eqState->iXPos);
 }
+
+
+int heuristicErrCount(State* pCurrentState, State* pTargetState){
+	QString curStr = pCurrentState->getPosStr();
+	QString tarStr = pTargetState->getPosStr();
+	int ret=0;
+	for(int i=8;i>=0;--i){
+		if(curStr[i]!='x' && curStr[i]!=tarStr[i])
+			++ret;
+	}
+
+	return ret;
+}
+
+int heuristicManhattan(State* pCurrentState, State* pTargetState){
+	int ret=0;
+	int* arrC=pCurrentState->getPosArr();
+	int* arrT=pTargetState->getPosArr();
+	for(int i=7;i>=0;--i){
+		ret+=abs(arrC[i]/3-arrT[i]/3)+abs(arrC[i]%3-arrT[i]%3);
+	}
+	delete arrC;
+	delete arrT;
+	return ret;
+}

@@ -32,9 +32,26 @@ public:
 		str.insert(7,"|");
 		return str;
 	}
+	QString getPosStr(){
+		QString str(QString("%1").arg(iState,0,16).toUpper());
+		str.insert(8-iXPos,"x");
+		return str;
+	}
 
 	unsigned int getHashI(){
 		return iState + iXPos;
+	}
+
+	int* getPosArr(){
+		QString str(QString("%1").arg(iState,0,16).toUpper());
+		str.insert(8-iXPos,"x");
+		int* arr = new int[8];
+		int n = QChar('8').digitValue();
+		for(int i = 0; i<9;++i){
+			if(str[i]=='x')continue;
+			arr[n-str[i].digitValue()]=i;
+		}
+		return arr;
 	}
 
 	int getPosI() {return iXPos/3;}
