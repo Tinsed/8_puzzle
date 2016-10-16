@@ -142,6 +142,7 @@ void MainWindow::on_action_triggered(bool checked)
 void MainWindow::on_action_3_triggered(bool checked)
 {
 	if(checked){
+		iTypeAlg = ERRCOUNT;
 		ui->actionDFS->setChecked(false);
 		ui->action->setChecked(false);
 		ui->action_4->setChecked(false);
@@ -155,6 +156,7 @@ void MainWindow::on_action_3_triggered(bool checked)
 void MainWindow::on_action_4_triggered(bool checked)
 {
 	if(checked){
+		iTypeAlg = MTT;
 		ui->actionDFS->setChecked(false);
 		ui->action->setChecked(false);
 		ui->action_3->setChecked(false);
