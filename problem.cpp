@@ -257,7 +257,12 @@ Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *unqNodes, QQueue<Node*
 	return ret;
 }
 
-Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QQueue<Node*>* fringeo, QTextEdit* logWidget){
+Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QTextEdit* logWidget){
+	QFile file("out.txt");
+	if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		 if(writeLog)return nullptr;
+	QTextStream out(&file);
+
 	QMultiMap<int,Node*>* fringe = new QMultiMap<int, Node*>();
 	Node* pStartNode = new Node(new State(
 								   problem->getInitSate()->iState,
@@ -276,9 +281,7 @@ Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QQueue<No
 
 		Node* current = fringe->first();
 		fringe->erase(fringe->begin());
-		/*logWidget->append(QString("Cur: "+current->getState()->toString()+"  D:%1 C:%2")
-						  .arg(current->getDepth(),2,10,QChar('0'))
-						  .arg(current->getCost(),3,10,QChar('0')));*/
+
 		unsigned int hash = current->getState()->getHashI();
 
 		if(unqNodes->contains(hash))
@@ -290,18 +293,62 @@ Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QQueue<No
 		if(problem->goalTest(current->getState(),problem->targetState)){
 			return current;
 		}
+		QString str, strDel;
 		QList<Node*>* successors = Expand(current, problem, problem->heuristicFoo); //раскрываем листья
-		//QString str = "Suc:";
+
 		for(Node* s:(*successors)){
+			if(writeLog||stepMode)
+				str.append(" " + s->getState()->toString());
 			if(unqNodes->contains(s->getState()->getHashI())){
+				if(stepMode)
+					strDel.append("  " + s->getState()->toString());
 				delete s;
 			}else{
-				//str.append(QString(" "+current->getState()->toString()+"  D:%1 C:%2")
-								  //.arg(current->getDepth(),2,10,QChar('0'))
-								  //.arg(current->getCost(),3,10,QChar('0')));
 				fringe->insert(s->getCost(),s);
 			}
 		}
+		if(writeLog){
+			out << "C" << current->getDepth() << ": " + current->getState()->toString()<< "\n";
+			out << "N: " << unqNodes->size() << " Q: " << fringe->size() << "\n";
+			logWidget->append("S:"+str);
+		}
+		if(stepMode){
+			logWidget->clear();
+			logWidget->append("Target node: "+problem->targetState->toString());
+			logWidget->append(QString("Current node: "+current->getState()->toString()+"  D:%1 C:%2")
+									  .arg(current->getDepth(),2,10,QChar('0'))
+									  .arg(current->getCost(),3,10,QChar('0')));
+			logWidget->append("Depth: "+QString::number(current->getDepth()));
+			logWidget->append("Successors:"+str);
+			logWidget->append("Colisions:"+strDel);
+			logWidget->append("Unique nodes: "+QString::number(unqNodes->size()));
+			logWidget->append("Fringe size: "+QString::number(fringe->size()));
+			QString strFringe;
+			int counter = 6;
+			for(Node* i:*fringe){
+				strFringe.append(QString(i->getState()->toString()+ "  D:%1 C:%2 ")
+						.arg(i->getDepth(),2,10,QChar('0'))
+						.arg(i->getCost(),3,10,QChar('0')));
+				counter--;
+				if(counter==0){
+					strFringe.append("\n");
+					counter=6;
+				}
+			}
+			logWidget->append("Fringe: \n"+strFringe);
+
+		}
+
+		refreshEvents();
+		if(stepMode){
+			logWidget->append("Wait for step....");
+			while(!doStep){
+				refreshEvents();
+			}
+			if(stepMode) logWidget->clear();
+			doStep = false;
+		}
+
 	}
 	return nullptr;
 }
@@ -335,13 +382,13 @@ QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){
 		logWidget->append("Type: A* \n");
 		logWidget->append("H function: Error positions \n");
 		problem->heuristicFoo = &heuristicErrCount;
-		pResultNode = Tree_Search_AStar(problem, visitedNodes, fringe, logWidget);
+		pResultNode = Tree_Search_AStar(problem, visitedNodes, logWidget);
 		break;
 	case MTT:
 		logWidget->append("Type: A* \n");
 		logWidget->append("Goal function: Manhattan \n");
 		problem->heuristicFoo = &heuristicManhattan;
-		pResultNode = Tree_Search_AStar(problem, visitedNodes, fringe, logWidget);
+		pResultNode = Tree_Search_AStar(problem, visitedNodes, logWidget);
 	}
 	logWidget->append("Time elapsed: "+QString::number(start.elapsed())+"ms");
 	//Получаем решение

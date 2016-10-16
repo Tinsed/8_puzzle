@@ -52,6 +52,6 @@ public:
 	friend Node* RecDLS(Node*& pStartNode, Problem* problem, QHash<int, int> *visitedNodes, QQueue<Node*>* fringe,QHash<int,Node*> *unqNodes, QTextEdit* logWidget, QTextStream& out);
 	friend Node* Tree_Search_DLS(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);
 
-	friend Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);
+	friend Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *visitedNodes, QTextEdit* logWidget);
 };
 #endif // TREE_H
