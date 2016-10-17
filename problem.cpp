@@ -35,16 +35,15 @@ Problem::~Problem(){
 	delete targetState;
 }
 
-QList<Node*>* Expand(Node* current, Problem* problem, int (*heurFoo) (State*, State*)){
+QList<Node*>* Expand(Node* current, Problem* problem){
 	QList<Node*>* successors = new QList<Node*>();
 
 	for(auto Action:*problem->vecOperations){
 		int act=0;
 		State* newState = Action(current,act);
 		if(newState != nullptr){
-			int stepCost = (heurFoo)?(heurFoo(newState,problem->getTargetSate())):1;
 			Node* s = new Node(newState, current, act,
-							   current->getCost()+stepCost,
+							   current->getCost()+1,
 							   current->getDepth()+1);
 			countObj++;
 			successors->insert(successors->end(),s);
@@ -259,10 +258,12 @@ Node* Tree_Search_DLS(Problem* problem, QHash<int,Node*> *unqNodes, QQueue<Node*
 
 Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QTextEdit* logWidget){
 	QFile file("out.txt");
+
 	if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 		 if(writeLog)return nullptr;
 	QTextStream out(&file);
 
+	QHash<int, int> *visitedNodes = new QHash<int, int>();
 	QMultiMap<int,Node*>* fringe = new QMultiMap<int, Node*>();
 	Node* pStartNode = new Node(new State(
 								   problem->getInitSate()->iState,
@@ -284,27 +285,39 @@ Node* Tree_Search_AStar(Problem* problem, QHash<int, Node*> *unqNodes, QTextEdit
 
 		unsigned int hash = current->getState()->getHashI();
 
-		if(unqNodes->contains(hash))
-			continue;
-		else
+		if(!unqNodes->contains(hash))
 			unqNodes->insert(hash,current);
+		if(visitedNodes->contains(hash)){
+			if(current->getCost()< (*visitedNodes)[hash])
+				(*visitedNodes)[hash]=current->getCost();
+			else
+				continue;
+		}else{
+			visitedNodes->insert(hash,current->getCost());
+		}
 
 
 		if(problem->goalTest(current->getState(),problem->targetState)){
+			visitedNodes->clear();
+			delete visitedNodes;
 			return current;
 		}
 		QString str, strDel;
-		QList<Node*>* successors = Expand(current, problem, problem->heuristicFoo); //раскрываем листья
+		QList<Node*>* successors = Expand(current, problem); //раскрываем листья
 
 		for(Node* s:(*successors)){
 			if(writeLog||stepMode)
 				str.append(" " + s->getState()->toString());
-			if(unqNodes->contains(s->getState()->getHashI())){
+			int hash = s->getState()->getHashI();
+			if(unqNodes->contains(hash)){
 				if(stepMode)
 					strDel.append("  " + s->getState()->toString());
-				delete s;
+				if(s->getCost()< (*visitedNodes)[hash])
+					(*visitedNodes)[hash]=current->getCost();
+				else
+					delete s;
 			}else{
-				fringe->insert(s->getCost(),s);
+				fringe->insert(s->getCost()+problem->heuristicFoo(s->getState(),problem->targetState),s);
 			}
 		}
 		if(writeLog){
@@ -380,13 +393,13 @@ QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWidget, int type){
 		break;
 	case ERRCOUNT:
 		logWidget->append("Type: A* \n");
-		logWidget->append("H function: Error positions \n");
+		logWidget->append("Heuristic function: Error positions \n");
 		problem->heuristicFoo = &heuristicErrCount;
 		pResultNode = Tree_Search_AStar(problem, visitedNodes, logWidget);
 		break;
 	case MTT:
 		logWidget->append("Type: A* \n");
-		logWidget->append("Goal function: Manhattan \n");
+		logWidget->append("Heuristic function: Manhattan \n");
 		problem->heuristicFoo = &heuristicManhattan;
 		pResultNode = Tree_Search_AStar(problem, visitedNodes, logWidget);
 	}

@@ -79,12 +79,12 @@ void MainWindow::on_pushButton_clicked()
 		ui->textEdit->append("\nSuccess! "+solution->last()->getState()->toString());
 		ui->textEdit->append("Path:");
 		for(auto i:*solution)
-			ui->textEdit->append(QString::number(i->getDepth())+"	"+getActStr(i->getAction())+"	"+i->getState()->toString());
+			ui->textEdit->append(QString::number(i->getDepth())+"	"+getActStr(i->getAction())+"	"+i->getState()->toString()+"	Cost: "+QString::number(i->getCost()));
 		ui->textEdit->append("");
 		for(auto i:*solution)
 			delete i;
 	}
-	delete solution; //TODO: global
+	delete solution;
 }
 
 void MainWindow::on_pushButton_step_clicked()

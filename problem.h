@@ -45,7 +45,7 @@ public:
 
 	friend QList<Node*>* SolveProblem(Problem* problem, QTextEdit* logWiget, int type);
 
-	friend QList<Node*>* Expand(Node* currentNode, Problem*, int (*heurFoo) (State*, State*) = nullptr); //open node for successors
+	friend QList<Node*>* Expand(Node* currentNode, Problem*); //open node for successors
 
 	friend Node* Tree_Search_BFS(Problem*, QHash<int, Node*>* visitedNodes, QQueue<Node*>* fringe, QTextEdit* logWidget);	//Tree search (FIFO by QQueue)
 

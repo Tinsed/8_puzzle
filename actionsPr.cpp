@@ -9,7 +9,7 @@ QString& getActStr(int a){
 	case RIGHT:
 		str->append(">");break;
 	case DOWN:
-		str->append(".");break;
+		str->append("V");break;
 	case LEFT:
 		str->append("<");break;
 	default:
